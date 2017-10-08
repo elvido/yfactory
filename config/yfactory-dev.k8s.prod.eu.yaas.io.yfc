@@ -1,0 +1,6 @@
+# yfactory-dev.k8s.prod.eu.yaas.io
+
+local JMPBX_USER='rhofmann'
+local JMPBX_NAME='k8s.jb.eu.yaas.io'
+local K8S_API_HOST='k8s-api.ydev-prod.eu.yaas.io'
+local K8S_API_PORT=6443
