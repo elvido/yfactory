@@ -38,10 +38,10 @@ function yfactory()
       unalias yfrun &>/dev/null
       ;;
     manage )
-      if [ ! -s "${PROXY_PID}" ] ||  ! ps -p $(cat "${PROXY_PID}") >/dev/null; then
+      if [ ! -s "${PROXY_PID}" ] ||  ! ps -p "$(cat "${PROXY_PID}")" >/dev/null; then
         rm -f "${PROXY_PID}"
         yfactory connect
-        ( "${KUBECTL_BIN}" $(echo ${KUBECTL_ARGS}) --port=${K8S_UI_PORT} proxy &>/dev/null & ; echo $! >"${PROXY_PID}" ) &>/dev/null
+        ( "${KUBECTL_BIN}" $(echo "${KUBECTL_ARGS}") --port=${K8S_UI_PORT} proxy & &>/dev/null ; echo $! >"${PROXY_PID}" ) &>/dev/null
         sleep 3
       fi
       ( type "xdg-open" &>/dev/null ) && xdg-open "${K8S_UI_URL}" || open "${K8S_UI_URL}"
@@ -50,25 +50,25 @@ function yfactory()
       [ ! -S "${SSH_CTRL}" ] && yfactory connect
       shift
       if [ $# -lt 1 ]; then
-      	{ ( type "x-terminal-emulator" &>/dev/null ) && x-terminal-emulator -T "yfactory - ${K8S_NAME}" -e "env KUBECONFIG=${KUBECTL_CONFIG} $SHELL" } || \
-      	{ ( type "exo-open" &>/dev/null ) && exo-open --launch TerminalEmulator env KUBECONFIG="${KUBECTL_CONFIG}" $SHELL } || \
-      	open -a Terminal env KUBECONFIG="${KUBECTL_CONFIG}" $SHELL
+      	( ( type "x-terminal-emulator" &>/dev/null ) && x-terminal-emulator -T "yfactory - ${K8S_NAME}" -e "env KUBECONFIG=${KUBECTL_CONFIG} ${SHELL}" ) || \
+      	( ( type "exo-open" &>/dev/null ) && exo-open --launch TerminalEmulator env KUBECONFIG="${KUBECTL_CONFIG}" "${SHELL}" ) || \
+      	open -a Terminal env KUBECONFIG="${KUBECTL_CONFIG}" "${SHELL}"
       else
       	KUBECONFIG=${KUBECTL_CONFIG} $*
       fi
       ;;
     close )
-      [ -s "${PROXY_PID}" ] && kill $(cat "${PROXY_PID}") &>/dev/null
+      [ -s "${PROXY_PID}" ] && kill "$(cat "${PROXY_PID}")" &>/dev/null
       rm -f "${PROXY_PID}"
       ;;
     completion )
-      if [ -n "$ZSH_VERSION" ]; then
-        source <("${KUBECTL_BIN}" completion zsh)
-        source <("${KUBEHLM_BIN}" completion zsh)
-      else
-        source <("${KUBECTL_BIN}" completion bash)
-        source <("${KUBEHLM_BIN}" completion bash)
-      fi
+      _shell="$(ps -p $$ --no-headers -o comm=)"
+      case "${_shell}" in
+        bash|zsh)
+          source <("${KUBECTL_BIN}" completion "${_shell}")
+          source <("${KUBEHLM_BIN}" completion "${_shell}")
+          ;;
+      esac
       ;;
     * )
       echo "usage: yfactory connect|disconnect|manage|run"
