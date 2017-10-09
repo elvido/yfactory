@@ -62,7 +62,7 @@ function yfactory()
       rm -f "${PROXY_PID}"
       ;;
     completion )
-      _shell="$(ps -p $$ -o ucomm=)"
+      local _shell="$(ps -p $$ -o ucomm=)"
       case "${_shell}" in
         bash|zsh)
           source <("${KUBECTL_BIN}" completion "${_shell}")
